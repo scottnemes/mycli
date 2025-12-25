@@ -566,11 +566,15 @@ def watch_query(arg: str, **kwargs) -> Generator[tuple, None, None]:
             set_pager_enabled(False)
             for sql, title in sql_list:
                 cur.execute(sql)
-                if cur.description:
-                    headers = [x[0] for x in cur.description]
-                    yield (title, cur, headers, None)
-                else:
+                if not cur.description:
                     yield (title, None, None, None)
+                plural = '' if cur.rowcount == 1 else 's'
+                headers = [x[0] for x in cur.description]
+                status = f'{cur.rowcount} row{plural} in set'
+                if cur.warning_count > 0:
+                    plural = '' if cur.warning_count == 1 else 's'
+                    status = f'{status}, {cur.warning_count} warning{plural}'
+                yield (["watch", seconds, title], cur, headers, status)
             sleep(seconds)
         except KeyboardInterrupt:
             # This prints the Ctrl-C character in its own line, which prevents

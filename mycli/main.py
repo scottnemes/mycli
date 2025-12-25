@@ -747,6 +747,13 @@ class MyCli:
             nonlocal mutating
             result_count = 0
             for title, cur, headers, status in res:
+                # If this is a watch query, offset the start time on the 2nd+ iteration
+                # to account for the sleep duration and reset the title back to the query.
+                if title is not None and title[0] == "watch":
+                    watch_seconds = float(title[1])
+                    if (time() - start) >= watch_seconds:
+                        start += watch_seconds
+                    title = title[2]
                 logger.debug("headers: %r", headers)
                 logger.debug("rows: %r", cur)
                 logger.debug("status: %r", status)
