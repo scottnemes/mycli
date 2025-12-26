@@ -193,16 +193,29 @@ def test_parseargfile_no_file():
 
 
 @dbtest
+def test_watch_query_iteration_with_warning():
+    """Test that a single iteration of the result of `watch_query` executes
+    the desired query and returns the given status."""
+    query = "select 1 + '1 + foo'"
+    expected_status = "1 row in set, 1 warning"
+    with db_connection().cursor() as cur:
+        result = next(mycli.packages.special.iocommands.watch_query(arg=query, cur=cur))
+    assert result[3] == expected_status
+
+
+@dbtest
 def test_watch_query_iteration():
     """Test that a single iteration of the result of `watch_query` executes
     the desired query and returns the given results."""
     expected_value = "1"
     query = f"SELECT {expected_value}"
     expected_title = f"> {query}"
+    expected_status = "1 row in set"
     with db_connection().cursor() as cur:
         result = next(mycli.packages.special.iocommands.watch_query(arg=query, cur=cur))
-    assert result[0] == expected_title
+    assert result[0][2] == expected_title
     assert result[2][0] == expected_value
+    assert result[3] == expected_status
 
 
 @dbtest
@@ -222,6 +235,7 @@ def test_watch_query_full():
     expected_value = "1"
     query = f"SELECT {expected_value}"
     expected_title = f"> {query}"
+    expected_status = "1 row in set"
     expected_results = [4, 5, 6, 7]  # Python 3.14 is skipping ahead to 6 or 7
     ctrl_c_process = send_ctrl_c(wait_interval)
     with db_connection().cursor() as cur:
@@ -229,8 +243,9 @@ def test_watch_query_full():
     ctrl_c_process.join(1)
     assert len(results) in expected_results
     for result in results:
-        assert result[0] == expected_title
+        assert result[0][2] == expected_title
         assert result[2][0] == expected_value
+        assert result[3] == expected_status
 
 
 @dbtest

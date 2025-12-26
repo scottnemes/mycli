@@ -3,12 +3,14 @@ Upcoming (TBD)
 
 Features
 --------
-* Update query processing functions to allow automatic show_warnings to work for more code paths like DDL
+* Update query processing functions to allow automatic show_warnings to work for more code paths like DDL.
+* Update the watch query output to include a status with the rows in set and warning count if applicable.
 
 Bug Fixes
 --------
 * Update the prompt display logic to handle an edge case where a socket is used without
   a host being parsed from any other method (#707).
+* Update watch query output to display the correct execution time on all iterations.
 
 
 1.42.0 (2025/12/20)
