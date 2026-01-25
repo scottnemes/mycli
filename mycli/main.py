@@ -66,6 +66,7 @@ from mycli.packages.tabular_output import sql_format
 from mycli.packages.toolkit.history import FileHistoryWithTimestamp
 from mycli.sqlcompleter import SQLCompleter
 from mycli.sqlexecute import FIELD_TYPES, SQLExecute
+from mycli.completion_refresher import set_prefetch_smart_completion_databases
 
 try:
     import paramiko
@@ -198,6 +199,16 @@ class MyCli:
 
         # Initialize completer.
         self.smart_completion = c["main"].as_bool("smart_completion")
+        
+        # Get list of databases to prefetch completion information for, if any, and set it for use by the completion refresher
+        self.prefetch_smart_completions_for = [
+            database for database in c["main"].get("prefetch_smart_completions_for", None).split(" ") if database
+        ]
+        if (self.smart_completion and
+            self.prefetch_smart_completions_for is not None and
+            len(self.prefetch_smart_completions_for) > 1 and
+            self.prefetch_smart_completions_for[0] != "None"):
+            set_prefetch_smart_completion_databases(self.prefetch_smart_completions_for)
         self.completer = SQLCompleter(
             self.smart_completion, supported_formats=self.main_formatter.supported_formats, keyword_casing=keyword_casing
         )

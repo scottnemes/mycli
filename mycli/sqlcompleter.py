@@ -849,13 +849,17 @@ class SQLCompleter(Completer):
             metadata[schema] = {}
         self.all_completions.update(schema)
 
-    def extend_relations(self, data: list[tuple[str, str]], kind: Literal['tables', 'views']) -> None:
+    def extend_relations(self, data: list[tuple[str, str]], kind: Literal['tables', 'views'], database: str | None = None) -> None:
         """Extend metadata for tables or views
 
         :param data: list of (rel_name, ) tuples
         :param kind: either 'tables' or 'views'
+        :param database either database name or None
         :return:
         """
+        if database is None:
+            database = self.dbname
+
         data_ll = [self.escaped_names(d) for d in data]
 
         # dbmetadata['tables'][$schema_name][$table_name] should be a list of
@@ -863,30 +867,34 @@ class SQLCompleter(Completer):
         metadata = self.dbmetadata[kind]
         for relname in data_ll:
             try:
-                metadata[self.dbname][relname[0]] = ["*"]
+                metadata[database][relname[0]] = ["*"]
             except KeyError:
-                _logger.error("%r %r listed in unrecognized schema %r", kind, relname[0], self.dbname)
+                _logger.error("%r %r listed in unrecognized schema %r", kind, relname[0], database)
             self.all_completions.add(relname[0])
 
-    def extend_columns(self, column_data: list[tuple[str, str]], kind: Literal['tables', 'views']) -> None:
+    def extend_columns(self, column_data: list[tuple[str, str]], kind: Literal['tables', 'views'], database: str | None = None) -> None:
         """Extend column metadata
 
         :param column_data: list of (rel_name, column_name) tuples
         :param kind: either 'tables' or 'views'
+        :param database either database name or None
         :return:
         """
+        if database is None:
+            database = self.dbname
+
         column_data_ll = [self.escaped_names(d) for d in column_data]
 
         metadata = self.dbmetadata[kind]
         for relname, column in column_data_ll:
-            if relname not in metadata[self.dbname]:
-                _logger.error("relname '%s' was not found in db '%s'", relname, self.dbname)
+            if relname not in metadata[database]:
+                _logger.error("relname '%s' was not found in db '%s'", relname, database)
                 # this could happen back when the completer populated via two calls:
                 # SHOW TABLES then SELECT table_name, column_name from information_schema.columns
                 # it's a slight race, but much more likely on Vitess picking random shards for each.
                 # see discussion in https://github.com/dbcli/mycli/pull/1182 (tl;dr - let's keep it)
                 continue
-            metadata[self.dbname][relname].append(column)
+            metadata[database][relname].append(column)
             self.all_completions.add(column)
 
     def extend_enum_values(self, enum_data: Iterable[tuple[str, str, list[str]]]) -> None:

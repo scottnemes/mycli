@@ -7,6 +7,15 @@ from mycli.sqlcompleter import SQLCompleter
 from mycli.sqlexecute import ServerSpecies, SQLExecute
 
 
+PREFETCH_COMPLETION_DATABASES: list[str] = []
+
+
+def set_prefetch_smart_completion_databases(databases: list[str] = None) -> None:
+    global PREFETCH_COMPLETION_DATABASES
+    if databases:
+        PREFETCH_COMPLETION_DATABASES = databases
+
+
 class CompletionRefresher:
     refreshers: dict = {}
 
@@ -121,15 +130,19 @@ def refresh_databases(completer: SQLCompleter, executor: SQLExecute) -> None:
 def refresh_schemata(completer: SQLCompleter, executor: SQLExecute) -> None:
     # schemata - In MySQL Schema is the same as database. But for mycli
     # schemata will be the name of the current database.
-    completer.extend_schemata(executor.dbname)
-    completer.set_dbname(executor.dbname)
+    databases = [executor.dbname, *PREFETCH_COMPLETION_DATABASES]
+    for database in databases:
+        completer.extend_schemata(database)
+        completer.set_dbname(database)
 
 
 @refresher("tables")
 def refresh_tables(completer: SQLCompleter, executor: SQLExecute) -> None:
-    table_columns_dbresult = list(executor.table_columns())
-    completer.extend_relations(table_columns_dbresult, kind="tables")
-    completer.extend_columns(table_columns_dbresult, kind="tables")
+    databases = [executor.dbname, *PREFETCH_COMPLETION_DATABASES]
+    for database in databases:
+        table_columns_dbresult = list(executor.table_columns(database))
+        completer.extend_relations(table_columns_dbresult, kind="tables", database=database)
+        completer.extend_columns(table_columns_dbresult, kind="tables", database=database)
 
 
 @refresher("enum_values")

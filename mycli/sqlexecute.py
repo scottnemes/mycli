@@ -418,12 +418,14 @@ class SQLExecute:
             for row in cur:
                 yield row
 
-    def table_columns(self) -> Generator[tuple[str, str], None, None]:
+    def table_columns(self, database: str | None = None) -> Generator[tuple[str, str], None, None]:
         """Yields (table name, column name) pairs"""
         assert isinstance(self.conn, Connection)
+        if database is None:
+            database = self.dbname
         with self.conn.cursor() as cur:
             _logger.debug("Columns Query. sql: %r", self.table_columns_query)
-            cur.execute(self.table_columns_query % self.dbname)
+            cur.execute(self.table_columns_query % database)
             for row in cur:
                 yield row
 

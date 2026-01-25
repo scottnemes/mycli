@@ -16,6 +16,12 @@ ssl_mode = auto
 # possible completions will be listed.
 smart_completion = True
 
+# Sets a given list of databases that mycli will prefetch smart completion
+# metadata for. Takes a space separate listed of databases, i.e.:
+# prefetch_smart_completions_for = db1 db2 db3 db4
+# When set to the default of None, completions are only fetched as needed.
+prefetch_smart_completions_for = None
+
 # Multi-line mode allows breaking up the sql statements into multiple lines. If
 # this is set to True, then the end of the statements must have a semi-colon.
 # If this is set to False then sql statements can't be split into multiple
