@@ -1,4 +1,4 @@
-TBD
+1.48.0 (2026/01/27)
 ==============
 
 Features
@@ -7,6 +7,7 @@ Features
 * Add completions for stored procedures.
 * Escape database completions.
 * Offer completions on `CREATE TABLE ... LIKE`.
+* Use 0x-style hex literals for binaries in SQL output formats.
 
 
 Bug Fixes
@@ -15,6 +16,7 @@ Bug Fixes
 * Fix error when selecting from an empty table.
 * Let favorite queries contain special commands.
 * Render binary values more consistently as hex literals.
+* Offer format completions on special command `\Tr`/`redirectformat`.
 
 
 1.47.0 (2026/01/24)
